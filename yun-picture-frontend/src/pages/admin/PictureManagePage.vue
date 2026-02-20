@@ -151,7 +151,7 @@ const searchParams = reactive<API.PictureQueryRequest>({
   current: 1,
   pageSize: 10,
   sortField: 'createTime',
-  sortOrder: 'ascend',
+  sortOrder: 'descend',
 })
 
 // 获取数据
