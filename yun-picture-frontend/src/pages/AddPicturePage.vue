@@ -1,10 +1,18 @@
 <template>
   <div id="addPicturePage">
-    <h2 style="margin-bottom: 16px">创建图片</h2>
+    <h2 style="margin-bottom: 16px">
+      {{ route.query?.id ? '修改图片' : '创建图片' }}
+    </h2>
     <!-- 图片上传组件-->
     <PictureUpload :picture="picture" :onSuccess="onSuccess" />
     <!-- 图片信息表单-->
-    <a-form v-if="picture" name="pictureForm" layout="vertical" :model="pictureForm" @finish="handleSubmit">
+    <a-form
+      v-if="picture"
+      name="pictureForm"
+      layout="vertical"
+      :model="pictureForm"
+      @finish="handleSubmit"
+    >
       <a-form-item name="name" label="名称">
         <a-input v-model:value="pictureForm.name" placeholder="请输入名称" allow-clear />
       </a-form-item>
@@ -46,7 +54,12 @@ import { onMounted, reactive, ref } from 'vue'
 import { userLoginUsingPost } from '@/api/userController'
 import { message } from 'ant-design-vue'
 import router from '@/router'
-import { editPictureUsingPost, listPictureTagCategoryUsingGet } from '@/api/pictureController'
+import {
+  editPictureUsingPost,
+  getPictureVoByIdUsingGet,
+  listPictureTagCategoryUsingGet,
+} from '@/api/pictureController'
+import { useRoute } from 'vue-router'
 
 const picture = ref<API.PictureVO>()
 const pictureForm = reactive<API.PictureEditRequest>({})
@@ -111,6 +124,31 @@ const getTagCategoryOptions = async () => {
 
 onMounted(() => {
   getTagCategoryOptions()
+})
+
+const route = useRoute()
+
+// 获取老数据。编辑图片复用上传
+const getOldPicture = async () => {
+  // 获取到 id
+  const id = route.query?.id
+  if (id) {
+    const res = await getPictureVoByIdUsingGet({
+      id,
+    })
+    if (res.data.code === 0 && res.data.data) {
+      const data = res.data.data
+      picture.value = data
+      pictureForm.name = data.name
+      pictureForm.introduction = data.introduction
+      pictureForm.category = data.category
+      pictureForm.tags = data.tags
+    }
+  }
+}
+
+onMounted(() => {
+  getOldPicture()
 })
 </script>
 
