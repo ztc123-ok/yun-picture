@@ -192,6 +192,12 @@ declare namespace API {
     userId?: number
   }
 
+  type PictureReviewRequest = {
+    id?: number
+    reviewMessage?: string
+    reviewStatus?: number
+  }
+
   type PictureTagCategory = {
     categoryList?: string[]
     tagList?: string[]
