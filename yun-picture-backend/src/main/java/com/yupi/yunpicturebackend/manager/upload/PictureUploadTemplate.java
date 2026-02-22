@@ -57,6 +57,7 @@ public abstract class PictureUploadTemplate {
             // 处理文件来源
             processFile(inputSource, file);
             // 4. 上传图片到对象存储
+            log.info("上传到云服务：{}",uploadPath);
             PutObjectResult putObjectResult = cosManager.putPictureObject(uploadPath, file);
             // 5. 获取图片信息对象，封装返回结果
             ImageInfo imageInfo = putObjectResult.getCiUploadResult().getOriginalInfo().getImageInfo();

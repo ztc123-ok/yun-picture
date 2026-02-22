@@ -2,20 +2,20 @@ package com.yupi.yunpicturebackend.manager.upload;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.http.HttpResponse;
-import cn.hutool.http.HttpStatus;
-import cn.hutool.http.HttpUtil;
-import cn.hutool.http.Method;
+import cn.hutool.http.*;
 import com.yupi.yunpicturebackend.exception.BusinessException;
 import com.yupi.yunpicturebackend.exception.ErrorCode;
 import com.yupi.yunpicturebackend.exception.ThrowUtils;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * URL 图片上传
@@ -79,7 +79,11 @@ public class UrlPictureUpload extends PictureUploadTemplate {
     @Override
     protected String getOriginFilename(Object inputSource) {
         String fileUrl = (String) inputSource;
-        return FileUtil.mainName(fileUrl);
+        String fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+        if (fileName.length() > 128){
+            fileName = "too_long_name.png";
+        }
+        return fileName;
     }
 
     // 目前通过网址下载图片可能设计反爬拦截下载失败，使用自己的
@@ -87,6 +91,52 @@ public class UrlPictureUpload extends PictureUploadTemplate {
     protected void processFile(Object inputSource, File file) throws Exception {
         String fileUrl = (String) inputSource;
         // 下载文件到临时目录
-        HttpUtil.downloadFile(fileUrl, file);
+        // HttpUtil.downloadFile(fileUrl, file);
+        pythonDownload(fileUrl, file);
+    }
+
+    private static final String PYTHON_PATH = "C:/apps/anaconda/python.exe";
+
+    private static final String SCRIPT_PATH =
+            "C:/apps/idea/ideaProject/yun-picture/yun-picture-backend/src/main/java/com/yupi/yunpicturebackend/manager/upload/download.py";
+
+    // 使用python下载图片
+    protected void pythonDownload(String url, File file) {
+        try {
+            // 执行python脚本
+            ProcessBuilder pb = new ProcessBuilder(
+                    PYTHON_PATH,
+                    SCRIPT_PATH,
+                    url,
+                    file.getAbsolutePath()
+            );
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
+
+            // 必须读取输出，防止缓冲区满卡死
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream())
+            );
+            boolean success = false;
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if ("SUCCESS".equals(line)) {
+                    success = true;
+                }
+            }
+            reader.close();
+
+            // 最多等待python30秒执行
+            boolean finished = process.waitFor(30, TimeUnit.SECONDS);
+            if (!finished) {
+                process.destroyForcibly();
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "URL图片下载失败");
+            }
+            if (!success){
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "URL图片下载失败");
+            }
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "URL图片下载失败");
+        }
     }
 }
