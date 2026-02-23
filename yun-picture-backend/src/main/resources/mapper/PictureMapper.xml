@@ -31,13 +31,12 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,url,name,
+        id,url,thumbnailUrl,name,
         introduction,category,tags,
         picSize,picWidth,picHeight,
-        picScale,picFormat,userId,
+        picScale,picFormat,userId,spaceId,
         createTime,editTime,updateTime,
         isDelete,reviewStatus,reviewMessage,
-        reviewerId,reviewTime,thumbnailUrl,
-        spaceId,picColor
+        reviewerId,reviewTime
     </sql>
 </mapper>
