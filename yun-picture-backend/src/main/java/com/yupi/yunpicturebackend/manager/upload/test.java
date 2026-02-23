@@ -1,7 +1,12 @@
 package com.yupi.yunpicturebackend.manager.upload;
 
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
+
 import java.io.*;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class test {
@@ -78,13 +83,30 @@ public class test {
 
     // 测试
     public static void main(String[] args) {
-        test downloader = new test();
-        downloader.saveImageToLocalStorage("https://www.codefather.cn/logo.png","./a.png");
-//        downloader.processFile(
-//                "https://www.codefather.cn/logo.png",
-//                new File("C:\\apps\\idea\\ideaProject\\yun-picture\\yun-picture-backend\\src\\main\\java\\com\\yupi\\yunpicturebackend\\manager\\upload\\pic.png")
-//        );
+        String url = "https://www.codefather.cn/logo.png";
+        Map<String, String> headers = new HashMap<>();
+        headers.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+        headers.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+        headers.put("Accept-Language", "zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3");
+        headers.put("Accept-Encoding", "gzip, deflate"); // 注意：这行有时会出问题，可注释
+        headers.put("Connection", "keep-alive");
+        headers.put("Upgrade-Insecure-Requests", "1");
 
+        HttpResponse response = HttpRequest.get(url)
+                .addHeaders(headers)
+                .timeout(20000) // 超时设置
+                .execute();
+
+        System.out.println("状态码：" + response.getStatus());
+
+        if (response.isOk()) {
+            File file = new File("downloaded_file");
+            response.writeBody(file);
+            System.out.println("下载成功：" + file.getAbsolutePath());
+        } else {
+            System.out.println("下载失败，响应内容：" + response.body());
+        }
     }
+
 }
 
