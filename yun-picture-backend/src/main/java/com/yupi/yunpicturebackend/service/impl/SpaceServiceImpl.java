@@ -11,8 +11,10 @@ import com.yupi.yunpicturebackend.exception.BusinessException;
 import com.yupi.yunpicturebackend.exception.ErrorCode;
 import com.yupi.yunpicturebackend.exception.ThrowUtils;
 //import com.yupi.yunpicturebackend.manager.sharding.DynamicShardingManager;
+import com.yupi.yunpicturebackend.model.dto.picture.PictureQueryRequest;
 import com.yupi.yunpicturebackend.model.dto.space.SpaceAddRequest;
 import com.yupi.yunpicturebackend.model.dto.space.SpaceQueryRequest;
+import com.yupi.yunpicturebackend.model.entity.Picture;
 import com.yupi.yunpicturebackend.model.entity.Space;
 import com.yupi.yunpicturebackend.model.entity.SpaceUser;
 import com.yupi.yunpicturebackend.model.entity.User;
@@ -26,6 +28,7 @@ import com.yupi.yunpicturebackend.service.SpaceService;
 import com.yupi.yunpicturebackend.mapper.SpaceMapper;
 import com.yupi.yunpicturebackend.service.UserService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -44,6 +47,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
     @Resource
     private UserService userService;
     @Resource
+    @Lazy
     private PictureService pictureService;
 
     @Resource
@@ -129,10 +133,20 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR);
         // 仅本人或者管理员可删除
         this.checkSpaceAuth(loginUser, oldSpace);
-        // 操作数据库
-
-        boolean result = this.removeById(id);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        // 删除空间同时关联删除空间的图片
+        QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userId", loginUser.getId());
+        queryWrapper.eq("spaceId", id);
+        List<Picture> pictureList = pictureService.list(queryWrapper);
+        transactionTemplate.execute(status -> {
+            // 操作数据库
+            for (Picture picture : pictureList){
+                pictureService.deletePicture(picture.getId(), loginUser);
+            }
+            boolean result = this.removeById(id);
+            ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+            return true;
+        });
     }
 
     @Override
