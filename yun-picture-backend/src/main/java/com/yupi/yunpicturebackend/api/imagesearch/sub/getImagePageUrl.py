@@ -1,11 +1,15 @@
 # baidu_image_search.py
-from DrissionPage import ChromiumPage
+from DrissionPage import ChromiumPage, ChromiumOptions
 import time
 import sys
 
 
 def baidu_image_search_by_url(image_url: str):
-    page = ChromiumPage()
+    # 设置无头模式，不打开浏览器窗口
+    options = ChromiumOptions()
+    options.headless()
+
+    page = ChromiumPage(addr_or_opts=options)
 
     # 1. 打开百度图片搜索页面
     page.get('https://graph.baidu.com/pcpage/index?tpl_from=pc')

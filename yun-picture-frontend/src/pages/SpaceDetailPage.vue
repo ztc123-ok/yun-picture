@@ -47,7 +47,11 @@
     <div style="margin-bottom: 16px" />
     <!-- 搜索表单 -->
     <PictureSearchForm :onSearch="onSearch" />
+    <!-- 按颜色搜索，跟其他搜索条件独立 -->
     <div style="margin-bottom: 16px" />
+    <a-form-item label="按颜色搜索">
+      <color-picker format="hex" @pureColorChange="onColorChange" />
+    </a-form-item>
     <!-- 图片列表 -->
     <PictureList
       :dataList="dataList"
@@ -79,11 +83,13 @@ import { computed, h, onMounted, ref, watch } from 'vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import { message } from 'ant-design-vue'
 import {
-  listPictureVoByPageUsingPost,
+  listPictureVoByPageUsingPost, searchPictureByColorUsingPost,
 } from '@/api/pictureController.ts'
 import { formatSize } from '@/utils'
 import PictureList from '@/components/PictureList.vue'
 import PictureSearchForm from '@/components/PictureSearchForm.vue'
+import {ColorPicker} from "vue3-colorpicker";
+import "vue3-colorpicker/style.css"
 import { BarChartOutlined, EditOutlined, TeamOutlined } from '@ant-design/icons-vue'
 import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '../constants/space.ts'
 
@@ -185,6 +191,22 @@ const onSearch = (newSearchParams: API.PictureQueryRequest) => {
   fetchData()
 }
 
+// 按照颜色搜索
+const onColorChange = async (color: string) => {
+  loading.value = true
+  const res = await searchPictureByColorUsingPost({
+    picColor: color,
+    spaceId: props.id,
+  })
+  if (res.data.code === 0 && res.data.data) {
+    const data = res.data.data ?? []
+    dataList.value = data
+    total.value = data.length
+  } else {
+    message.error('获取数据失败，' + res.data.message)
+  }
+  loading.value = false
+}
 
 // ---- 批量编辑图片 -----
 const batchEditPictureModalRef = ref()
