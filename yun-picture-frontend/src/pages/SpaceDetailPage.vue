@@ -83,6 +83,7 @@ import {
 } from '@/api/pictureController.ts'
 import { formatSize } from '@/utils'
 import PictureList from '@/components/PictureList.vue'
+import PictureSearchForm from '@/components/PictureSearchForm.vue'
 import { BarChartOutlined, EditOutlined, TeamOutlined } from '@ant-design/icons-vue'
 import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '../constants/space.ts'
 
