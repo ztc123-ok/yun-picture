@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AliYunAiApi {
 
+    // 调用阿里云通义万相 V1 (wanx-v1) 模型的 图像扩展 (Outpainting) 功能，老贵了
     // 读取配置文件
     @Value("${aliYunAi.apiKey}")
     private String apiKey;
