@@ -99,6 +99,10 @@ public class UrlPictureUpload extends PictureUploadTemplate {
 
     private static final String SCRIPT_PATH =
             "C:/apps/idea/ideaProject/yun-picture/yun-picture-backend/src/main/java/com/yupi/yunpicturebackend/manager/upload/download.py";
+//    private static final String PYTHON_PATH = "/root/anaconda3/bin/python";
+//
+//    private static final String SCRIPT_PATH =
+//            "/www/wwwroot/pyScript/download.py";
 
     // 使用python下载图片
     protected void pythonDownload(String url, File file) {

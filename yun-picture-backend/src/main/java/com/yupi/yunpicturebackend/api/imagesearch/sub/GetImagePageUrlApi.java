@@ -16,6 +16,10 @@ public class GetImagePageUrlApi {
 
     private static final String SCRIPT_PATH =
             "C:/apps/idea/ideaProject/yun-picture/yun-picture-backend/src/main/java/com/yupi/yunpicturebackend/api/imagesearch/sub/getImagePageUrl.py";
+//    private static final String PYTHON_PATH = "/root/anaconda3/bin/python";
+//
+//    private static final String SCRIPT_PATH =
+//            "/www/wwwroot/pyScript/getImagePageUrl.py";
 
     /**
      * 获取以图搜图页面地址
